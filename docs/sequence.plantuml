@@ -1,0 +1,43 @@
+@startuml sequence
+
+actor User
+
+box "Presentation layer"
+    participant Frontend
+    participant Controllers
+    participant UserNotificationService
+endbox
+
+box "Business layer"
+    participant SettingsService
+    participant SettingChangingAuthorizationService
+endbox
+
+box "Data access layer"
+    participant SettingChangingRequestRepository
+    participant SettingRepository
+endbox
+
+User -> Frontend : edit setting
+Frontend -> Controllers: UPDATE /api/settings/{id}\n{ value }
+Controllers-> SettingsService : updateSetting\n(settingId, newValue)
+
+SettingsService -> SettingChangingAuthorizationService : createSettingChangingRequest\n(settingId, newValue)
+SettingChangingAuthorizationService -> SettingChangingAuthorizationService : generateAuthCode()
+SettingChangingAuthorizationService -> SettingChangingRequestRepository : saveRequest\n({ settingId, value, authCode })
+SettingChangingRequestRepository --> SettingChangingAuthorizationService  : saved
+SettingChangingAuthorizationService  -> UserNotificationService : sendAuthCode(authCode) 
+UserNotificationService --> User : { authCode }
+
+SettingChangingAuthorizationService --> Frontend : { settingChangingRequestId }
+Frontend --> User : show message\n"Please type\nauthCode"
+User -> Frontend : type authCode
+Frontend -> Controllers: UPDATE\n/api/setting-changing-requests/{id}\n{ authCode }
+Controllers-> SettingChangingAuthorizationService : confirmChanging(requestId, authCode)
+SettingChangingAuthorizationService -> SettingChangingAuthorizationService : validateAuthCode(authCode)
+SettingChangingAuthorizationService -> SettingChangingRequestRepository : markAsConfirmed(requestId)
+SettingChangingRequestRepository --> SettingChangingAuthorizationService : saved
+SettingChangingAuthorizationService -> SettingRepository : updateSetting\n(request->setting->id, request->value)
+SettingRepository  --> SettingChangingAuthorizationService : saved
+
+@enduml
