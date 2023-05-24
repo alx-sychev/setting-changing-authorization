@@ -9,7 +9,6 @@ box "Presentation layer"
 endbox
 
 box "Business layer"
-    participant SettingsService
     participant SettingChangingAuthorizationService
 endbox
 
@@ -20,17 +19,15 @@ endbox
 
 User -> Frontend : edit setting
 Frontend -> Controllers: UPDATE /api/settings/{id}\n{ value }
-Controllers-> SettingsService : updateSetting\n(settingId, newValue)
 
-SettingsService -> SettingChangingAuthorizationService : createSettingChangingRequest\n(settingId, newValue)
+Controllers -> SettingChangingAuthorizationService : createSettingChangingRequest\n(settingId, newValue)
 SettingChangingAuthorizationService -> SettingChangingAuthorizationService : generateAuthCode()
 SettingChangingAuthorizationService -> SettingChangingRequestRepository : saveRequest\n({ settingId, value, authCode })
 SettingChangingRequestRepository --> SettingChangingAuthorizationService  : saved
 SettingChangingAuthorizationService  -> UserNotificationService : sendAuthCode(authCode) 
 UserNotificationService --> User : { authCode }
 
-SettingChangingAuthorizationService --> SettingsService : settingChangingRequestId
-SettingsService --> Controllers : settingChangingRequestId
+SettingChangingAuthorizationService --> Controllers : settingChangingRequestId
 Controllers --> Frontend : { settingChangingRequestId }
 Frontend -> Frontend : save settingChangingRequestId 
 
