@@ -39,6 +39,9 @@ SettingChangingAuthorizationService -> SettingChangingAuthorizationService : val
 SettingChangingAuthorizationService -> SettingChangingRequestRepository : markAsConfirmed(requestId)
 SettingChangingRequestRepository --> SettingChangingAuthorizationService : saved
 SettingChangingAuthorizationService -> SettingRepository : updateSetting\n(request->setting->id, request->value)
-SettingRepository  --> SettingChangingAuthorizationService : saved
+SettingRepository --> SettingChangingAuthorizationService : saved
+SettingChangingAuthorizationService --> Controllers : ok
+Controllers --> Frontend : ok
+Frontend --> User : message\n"Setting was changed"
 
 @enduml
