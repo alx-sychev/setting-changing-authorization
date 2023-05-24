@@ -29,7 +29,11 @@ SettingChangingRequestRepository --> SettingChangingAuthorizationService  : save
 SettingChangingAuthorizationService  -> UserNotificationService : sendAuthCode(authCode) 
 UserNotificationService --> User : { authCode }
 
-SettingChangingAuthorizationService --> Frontend : { settingChangingRequestId }
+SettingChangingAuthorizationService --> SettingsService : settingChangingRequestId
+SettingsService --> Controllers : settingChangingRequestId
+Controllers --> Frontend : { settingChangingRequestId }
+Frontend -> Frontend : save settingChangingRequestId 
+
 Frontend --> User : show message\n"Please type\nauthCode"
 User -> Frontend : type authCode
 Frontend -> Controllers: UPDATE\n/api/setting-changing-requests/{id}\n{ authCode }
